@@ -1,5 +1,6 @@
 from ipykernel.kernelbase import Kernel
 
+
 class EchoKernel(Kernel):
     implementation = 'Echo'
     implementation_version = '1.0'
@@ -10,9 +11,15 @@ class EchoKernel(Kernel):
         'mimetype': 'text/plain',
         'file_extension': '.txt',
     }
-    banner = "Echo kernel - as useful as a parrot"
+    banner = "Echo kernel - as useful as a parrot, on steroids"
 
-    def do_execute(self, code, silent, store_history=True, user_expressions=None,
+    def init_metadata(self, parent):
+        self.m = super(EchoKernel, self).init_metadata(parent)
+        self.m["parent_metadata"] = parent["metadata"]
+        return self.m
+
+    def do_execute(self, code, silent,
+                   store_history=True, user_expressions=None,
                    allow_stdin=False):
         if not silent:
             stream_content = {'name': 'stdout', 'text': code}
@@ -22,5 +29,4 @@ class EchoKernel(Kernel):
                 # The base class increments the execution count
                 'execution_count': self.execution_count,
                 'payload': [],
-                'user_expressions': {},
-               }
+                'user_expressions': {}}
