@@ -22,20 +22,29 @@ class EchoKernel(Kernel):
         self.m["parent"] = parent
         return self.m
 
+    def w(self, s):
+        stream_content = {'name': 'stdout', 'text': s}
+        self.send_response(self.iopub_socket, 'stream', stream_content)
+
     def do_execute(self, code, silent,
                    store_history=True, user_expressions=None,
                    allow_stdin=False):
         if not silent:
-            stream_content = {'name': 'stdout', 'text': code}
-            self.send_response(self.iopub_socket, 'stream', stream_content)
-
-            stream_content = {'name': 'stdout', 'text': "\nmetadata was %s" % self.m}
-            self.send_response(self.iopub_socket, 'stream', stream_content)
+            self.w(code)
+            self.w("\nmetadata was %s\n" % self.m)
 
             m = wait_re.search(code)
             if m:
-                time.sleep(int(m.group(1)))
-                stream_content = {'name': 'stdout', 'text': "waited %d" % m.group(1)}
+                self.w("MATCH\n")
+                try:
+                    delay = int(m.group(1))
+                    time.sleep(delay)
+                    self.w("waited %d\n" % delay)
+                except Exception as e:
+                    self.w("wait exception: %s\n" % e)
+                self.w("OK matched\n")
+            else:
+                self.w("NOMATCH\n")
 
 
         return {'status': 'ok',
