@@ -1,0 +1,10 @@
+#! /bin/bash
+
+echo "::: Installing kernel"
+ls -l
+python -m echo_kernel.install
+
+echo "::: Listing installed kernels"
+jupyter kernelspec list
+
+echo "::: Done"
