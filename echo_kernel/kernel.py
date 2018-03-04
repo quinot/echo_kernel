@@ -1,4 +1,8 @@
 from ipykernel.kernelbase import Kernel
+import re
+import time
+
+wait_re = re.compile("wait (\d+)")
 
 
 class EchoKernel(Kernel):
@@ -15,7 +19,7 @@ class EchoKernel(Kernel):
 
     def init_metadata(self, parent):
         self.m = super(EchoKernel, self).init_metadata(parent)
-        self.m["parent_metadata"] = parent["metadata"]
+        self.m["parent"] = parent
         return self.m
 
     def do_execute(self, code, silent,
@@ -24,6 +28,15 @@ class EchoKernel(Kernel):
         if not silent:
             stream_content = {'name': 'stdout', 'text': code}
             self.send_response(self.iopub_socket, 'stream', stream_content)
+
+            stream_content = {'name': 'stdout', 'text': "\nmetadata was %s" % self.m}
+            self.send_response(self.iopub_socket, 'stream', stream_content)
+
+            m = wait_re.search(code)
+            if m:
+                time.sleep(int(m.group(1)))
+                stream_content = {'name': 'stdout', 'text': "waited %d" % m.group(1)}
+
 
         return {'status': 'ok',
                 # The base class increments the execution count
